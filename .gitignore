@@ -1,0 +1,36 @@
+# Ejecutables compilados
+cliente
+servidor
+
+# Archivos objeto
+*.o
+
+# Símbolos de debug
+*.dSYM/
+
+# Archivos temporales del sistema
+.DS_Store
+Thumbs.db
+
+# Archivos de editor
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Archivos de log
+*.log
+
+# Core dumps y profiling
+core
+core.*
+gmon.out
+vgcore.*
+
+# Archivos de valgrind
+valgrind*.log
+valgrind*.xml
+
+# Archivos de output de testing
+docs/testing/*.log
