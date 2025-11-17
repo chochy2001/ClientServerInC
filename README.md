@@ -188,9 +188,9 @@ Este protocolo asegura que los mensajes se transmitan completos, manejando corre
 ```
 Cliente                                    Servidor
   │                                           │
-  │──────── 1. Conectar (TCP) ──────────────►│
+  │──────── 1. Conectar (TCP) ──────────────► │
   │                                           │
-  │──── 2. Enviar comando (ej: "ls -la") ───►│
+  │──── 2. Enviar comando (ej: "ls -la") ───► │
   │                                           │
   │                                      3. Validar
   │                                      comando
@@ -198,11 +198,11 @@ Cliente                                    Servidor
   │                                      4. Ejecutar
   │                                      con popen()
   │                                           │
-  │◄──── 5. Retornar salida (stdout+stderr) ─│
+  │◄──── 5. Retornar salida (stdout+stderr) ─ │
   │                                           │
-  │──────── 6. Mostrar resultado ────────────│
+  │──────── 6. Mostrar resultado ──────────── │
   │                                           │
-  │──────── 7. Nuevo comando o salir ────────│
+  │──────── 7. Nuevo comando o salir ──────── │
 ```
 
 ## Estructura del Proyecto
