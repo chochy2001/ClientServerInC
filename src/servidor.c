@@ -1,8 +1,10 @@
 /*
  * servidor.c - Servidor SSH-like que ejecuta comandos remotamente
  *
- * Autor: Jorge Salgado Miranda
+ * Autores: Jorge Salgado Miranda
+ *          Joshua Ivan Lopez Nava
  * Fecha: 2025-11-17
+ * Curso: Arquitectura Cliente-Servidor
  * Propósito: Implementación del servidor que acepta conexiones TCP,
  *            recibe comandos de clientes, los ejecuta localmente y
  *            retorna la salida completa al cliente

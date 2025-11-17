@@ -34,3 +34,37 @@ valgrind*.xml
 
 # Archivos de output de testing
 docs/testing/*.log
+
+# ==========================================
+# ARCHIVOS DE DESARROLLO - NO COMPARTIR
+# ==========================================
+
+# Carpetas de herramientas de desarrollo
+.claude/
+.specify/
+specs/
+
+# Archivos de análisis y planificación
+ANALISIS_ULTRATHINK_FALTANTE.md
+ESTADO_ACTUAL.md
+RESUMEN_VISUAL_FALTANTE.md
+CHECKLIST_ENTREGA.md
+CUMPLIMIENTO_REQUISITOS_PROFESOR.md
+CLAUDE.md
+
+# Scripts de automatización internos
+scripts/
+
+# Archivos preparados para entrega (mantener local)
+entrega_email/
+
+# Documentación interna de desarrollo
+docs/CUMPLIMIENTO_CONSTITUTION.md
+docs/GUIA_PASO_A_PASO_ENTREGA.md
+docs/GUIA_TESTING.md
+docs/INDICE_DOCUMENTACION.md
+docs/PLANTILLA_INFORME_PDF.md
+docs/RESUMEN_PROYECTO.md
+docs/VALIDACION.md
+docs/codigo_para_pdf/
+docs/capturas/

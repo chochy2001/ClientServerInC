@@ -1,8 +1,10 @@
 /*
  * common.h - Definiciones compartidas entre cliente y servidor
  *
- * Autor: Jorge Salgado Miranda
+ * Autores: Jorge Salgado Miranda
+ *          Joshua Ivan Lopez Nava
  * Fecha: 2025-11-17
+ * Curso: Arquitectura Cliente-Servidor
  * Propósito: Header con constantes, macros y funciones de utilidad
  *            compartidas por cliente y servidor SSH-like
  */

@@ -1,8 +1,10 @@
 /*
  * cliente.c - Cliente SSH-like para ejecutar comandos remotamente
  *
- * Autor: Jorge Salgado Miranda
+ * Autores: Jorge Salgado Miranda
+ *          Joshua Ivan Lopez Nava
  * Fecha: 2025-11-17
+ * Curso: Arquitectura Cliente-Servidor
  * Propósito: Implementación del cliente que se conecta al servidor,
  *            envía comandos y muestra la salida recibida
  */
