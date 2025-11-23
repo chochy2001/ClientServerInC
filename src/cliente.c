@@ -31,6 +31,11 @@ int conectar_servidor(const char *ip, int puerto)
     int sock;
     struct sockaddr_in direccion_servidor;
 
+    if (strcmp(ip, "localhost") == 0)
+    {
+        ip = "127.0.0.1";
+    }
+
     // Crear socket
     sock = socket(AF_INET, SOCK_STREAM, 0);
     if (sock < 0)
