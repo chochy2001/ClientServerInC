@@ -15,7 +15,7 @@
 #include <ctype.h>
 
 // Lista de comandos prohibidos
-static const char* COMANDOS_PROHIBIDOS[] = {
+static const char *COMANDOS_PROHIBIDOS[] = {
     "cd",
     "top",
     "htop",
@@ -24,7 +24,7 @@ static const char* COMANDOS_PROHIBIDOS[] = {
     "less",
     "more",
     "ssh",
-    NULL  // Terminator
+    NULL // Terminator
 };
 
 /*
@@ -41,13 +41,16 @@ static const char* COMANDOS_PROHIBIDOS[] = {
  *   Compara el primer token del comando contra la lista de
  *   comandos prohibidos.
  */
-int es_comando_prohibido(const char* comando) {
-    for (int i = 0; COMANDOS_PROHIBIDOS[i] != NULL; i++) {
-        if (strcmp(comando, COMANDOS_PROHIBIDOS[i]) == 0) {
-            return 1;  // Comando prohibido
+int es_comando_prohibido(const char *comando)
+{
+    for (int i = 0; COMANDOS_PROHIBIDOS[i] != NULL; i++)
+    {
+        if (strcmp(comando, COMANDOS_PROHIBIDOS[i]) == 0)
+        {
+            return 1; // Comando prohibido
         }
     }
-    return 0;  // Comando permitido
+    return 0; // Comando permitido
 }
 
 /*
@@ -66,23 +69,28 @@ int es_comando_prohibido(const char* comando) {
  *   Verifica que el comando no esté vacío, no sea solo whitespace,
  *   y no esté en la lista de comandos prohibidos.
  */
-int validar_comando(const char* comando, char* mensaje_error, size_t tam_mensaje) {
+int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje)
+{
     // Verificar que no esté vacío
-    if (comando == NULL || strlen(comando) == 0) {
+    if (comando == NULL || strlen(comando) == 0)
+    {
         snprintf(mensaje_error, tam_mensaje, "ERROR: Comando vacío");
         return -1;
     }
 
     // Verificar que no sea solo whitespace
     int solo_espacios = 1;
-    for (size_t i = 0; i < strlen(comando); i++) {
-        if (!isspace((unsigned char)comando[i])) {
+    for (size_t i = 0; i < strlen(comando); i++)
+    {
+        if (!isspace((unsigned char)comando[i]))
+        {
             solo_espacios = 0;
             break;
         }
     }
 
-    if (solo_espacios) {
+    if (solo_espacios)
+    {
         snprintf(mensaje_error, tam_mensaje, "ERROR: Comando vacío");
         return -1;
     }
@@ -92,20 +100,22 @@ int validar_comando(const char* comando, char* mensaje_error, size_t tam_mensaje
     strncpy(comando_copia, comando, MAX_COMANDO_SIZE - 1);
     comando_copia[MAX_COMANDO_SIZE - 1] = '\0';
 
-    char* primer_token = strtok(comando_copia, " \t\n");
-    if (primer_token == NULL) {
+    char *primer_token = strtok(comando_copia, " \t\n");
+    if (primer_token == NULL)
+    {
         snprintf(mensaje_error, tam_mensaje, "ERROR: Comando vacío");
         return -1;
     }
 
     // Verificar si está prohibido
-    if (es_comando_prohibido(primer_token)) {
+    if (es_comando_prohibido(primer_token))
+    {
         snprintf(mensaje_error, tam_mensaje,
-                "ERROR: Comando '%s' no está soportado", primer_token);
+                 "ERROR: Comando '%s' no está soportado", primer_token);
         return -1;
     }
 
-    return 0;  // Comando válido
+    return 0; // Comando válido
 }
 
 /*
@@ -125,14 +135,16 @@ int validar_comando(const char* comando, char* mensaje_error, size_t tam_mensaje
  *   y captura toda la salida en el buffer. Limita la salida a tam_salida
  *   para prevenir buffer overflow.
  */
-int ejecutar_comando(const char* comando, char* salida, size_t tam_salida) {
+int ejecutar_comando(const char *comando, char *salida, size_t tam_salida)
+{
     // Construir comando con redirección de stderr a stdout
     char comando_completo[MAX_COMANDO_SIZE + 10];
     snprintf(comando_completo, sizeof(comando_completo), "%s 2>&1", comando);
 
     // Abrir pipe para ejecutar comando
-    FILE* fp = popen(comando_completo, "r");
-    if (fp == NULL) {
+    FILE *fp = popen(comando_completo, "r");
+    if (fp == NULL)
+    {
         perror("Error ejecutando comando");
         snprintf(salida, tam_salida, "ERROR: No se pudo ejecutar comando");
         return -1;
@@ -142,16 +154,20 @@ int ejecutar_comando(const char* comando, char* salida, size_t tam_salida) {
     size_t bytes_leidos = 0;
     char buffer[BUFFER_SIZE];
 
-    while (fgets(buffer, sizeof(buffer), fp) != NULL && bytes_leidos < tam_salida - 1) {
+    while (fgets(buffer, sizeof(buffer), fp) != NULL && bytes_leidos < tam_salida - 1)
+    {
         size_t len_buffer = strlen(buffer);
         size_t espacio_disponible = tam_salida - bytes_leidos - 1;
 
-        if (len_buffer > espacio_disponible) {
+        if (len_buffer > espacio_disponible)
+        {
             // Truncar si no cabe todo
             strncat(salida, buffer, espacio_disponible);
             bytes_leidos += espacio_disponible;
             break;
-        } else {
+        }
+        else
+        {
             strcat(salida, buffer);
             bytes_leidos += len_buffer;
         }
@@ -161,17 +177,20 @@ int ejecutar_comando(const char* comando, char* salida, size_t tam_salida) {
     int status = pclose(fp);
 
     // Si el comando no generó salida, indicarlo
-    if (bytes_leidos == 0) {
+    if (bytes_leidos == 0)
+    {
         snprintf(salida, tam_salida, "(comando ejecutado sin salida)\n");
     }
 
     // Verificar si hubo error en la ejecución
-    if (WIFEXITED(status)) {
+    if (WIFEXITED(status))
+    {
         int exit_code = WEXITSTATUS(status);
-        if (exit_code != 0 && bytes_leidos == 0) {
+        if (exit_code != 0 && bytes_leidos == 0)
+        {
             // Comando falló y no produjo salida
             snprintf(salida, tam_salida,
-                    "ERROR: Comando terminó con código de salida %d\n", exit_code);
+                     "ERROR: Comando terminó con código de salida %d\n", exit_code);
         }
     }
 
@@ -192,8 +211,10 @@ int ejecutar_comando(const char* comando, char* salida, size_t tam_salida) {
  *   Envía el mensaje de error al cliente usando el protocolo
  *   de longitud prefijada.
  */
-void enviar_error(int sock_cliente, const char* mensaje) {
-    if (enviar_con_longitud(sock_cliente, mensaje, strlen(mensaje)) < 0) {
+void enviar_error(int sock_cliente, const char *mensaje)
+{
+    if (enviar_con_longitud(sock_cliente, mensaje, strlen(mensaje)) < 0)
+    {
         fprintf(stderr, "Error enviando mensaje de error al cliente\n");
     }
 }
@@ -212,21 +233,24 @@ void enviar_error(int sock_cliente, const char* mensaje) {
  *   Crea socket TCP, configura SO_REUSEADDR, hace bind al puerto
  *   especificado y pone el socket en modo listen.
  */
-int crear_socket_servidor(int puerto) {
+int crear_socket_servidor(int puerto)
+{
     int sock_servidor;
     struct sockaddr_in direccion_servidor;
     int opt = 1;
 
     // Crear socket
     sock_servidor = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock_servidor < 0) {
+    if (sock_servidor < 0)
+    {
         perror("Error creando socket");
         return -1;
     }
 
     // Configurar SO_REUSEADDR para evitar "Address already in use"
     if (setsockopt(sock_servidor, SOL_SOCKET, SO_REUSEADDR,
-                   &opt, sizeof(opt)) < 0) {
+                   &opt, sizeof(opt)) < 0)
+    {
         perror("Error en setsockopt");
         close(sock_servidor);
         return -1;
@@ -240,15 +264,17 @@ int crear_socket_servidor(int puerto) {
 
     // Bind al puerto
     if (bind(sock_servidor,
-             (struct sockaddr*)&direccion_servidor,
-             sizeof(direccion_servidor)) < 0) {
+             (struct sockaddr *)&direccion_servidor,
+             sizeof(direccion_servidor)) < 0)
+    {
         perror("Error en bind");
         close(sock_servidor);
         return -1;
     }
 
     // Listen con backlog de 5
-    if (listen(sock_servidor, 5) < 0) {
+    if (listen(sock_servidor, 5) < 0)
+    {
         perror("Error en listen");
         close(sock_servidor);
         return -1;
@@ -271,24 +297,28 @@ int crear_socket_servidor(int puerto) {
  *   y retorna la salida. Termina cuando el cliente se desconecta
  *   o envía comando "salir"/"exit".
  */
-void manejar_cliente(int sock_cliente) {
-    char* comando = NULL;
+void manejar_cliente(int sock_cliente)
+{
+    char *comando = NULL;
     char mensaje_error[256];
-    char* salida = NULL;
+    char *salida = NULL;
 
     printf("Iniciando sesión con cliente...\n");
 
     // Loop de recepción de comandos
-    while (1) {
+    while (1)
+    {
         // Recibir comando del cliente
         ssize_t bytes_recibidos = recibir_con_longitud(sock_cliente, &comando);
 
-        if (bytes_recibidos < 0) {
+        if (bytes_recibidos < 0)
+        {
             fprintf(stderr, "Error recibiendo comando\n");
             break;
         }
 
-        if (bytes_recibidos == 0) {
+        if (bytes_recibidos == 0)
+        {
             printf("Cliente cerró la conexión\n");
             break;
         }
@@ -296,7 +326,8 @@ void manejar_cliente(int sock_cliente) {
         printf("Comando recibido: '%s'\n", comando);
 
         // Validar comando
-        if (validar_comando(comando, mensaje_error, sizeof(mensaje_error)) < 0) {
+        if (validar_comando(comando, mensaje_error, sizeof(mensaje_error)) < 0)
+        {
             printf("Comando inválido: %s\n", mensaje_error);
             enviar_error(sock_cliente, mensaje_error);
             free(comando);
@@ -306,7 +337,8 @@ void manejar_cliente(int sock_cliente) {
 
         // Asignar buffer para salida
         salida = malloc(MAX_SALIDA_SIZE);
-        if (salida == NULL) {
+        if (salida == NULL)
+        {
             perror("Error asignando memoria para salida");
             enviar_error(sock_cliente, "ERROR: Error interno del servidor");
             free(comando);
@@ -317,7 +349,8 @@ void manejar_cliente(int sock_cliente) {
         memset(salida, 0, MAX_SALIDA_SIZE);
 
         // Ejecutar comando
-        if (ejecutar_comando(comando, salida, MAX_SALIDA_SIZE) < 0) {
+        if (ejecutar_comando(comando, salida, MAX_SALIDA_SIZE) < 0)
+        {
             fprintf(stderr, "Error ejecutando comando\n");
             enviar_error(sock_cliente, "ERROR: Error ejecutando comando");
             free(comando);
@@ -330,7 +363,8 @@ void manejar_cliente(int sock_cliente) {
         printf("Enviando resultado (%zu bytes)\n", strlen(salida));
 
         // Enviar resultado al cliente
-        if (enviar_con_longitud(sock_cliente, salida, strlen(salida)) < 0) {
+        if (enviar_con_longitud(sock_cliente, salida, strlen(salida)) < 0)
+        {
             fprintf(stderr, "Error enviando resultado al cliente\n");
             free(comando);
             free(salida);
@@ -347,10 +381,12 @@ void manejar_cliente(int sock_cliente) {
     }
 
     // Cleanup final si quedó algo asignado
-    if (comando != NULL) {
+    if (comando != NULL)
+    {
         free(comando);
     }
-    if (salida != NULL) {
+    if (salida != NULL)
+    {
         free(salida);
     }
 
@@ -372,7 +408,8 @@ void manejar_cliente(int sock_cliente) {
  *   Parsea argumentos de línea de comandos, crea socket del servidor,
  *   y entra en loop infinito aceptando conexiones de clientes.
  */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     int puerto;
     int sock_servidor;
     int sock_cliente;
@@ -380,7 +417,8 @@ int main(int argc, char *argv[]) {
     socklen_t longitud_cliente;
 
     // Validar argumentos
-    if (argc != 2) {
+    if (argc != 2)
+    {
         fprintf(stderr, "Uso: %s <puerto>\n", argv[0]);
         fprintf(stderr, "Ejemplo: %s 8080\n", argv[0]);
         return EXIT_FAILURE;
@@ -388,14 +426,16 @@ int main(int argc, char *argv[]) {
 
     // Parsear puerto
     puerto = atoi(argv[1]);
-    if (puerto < 1024 || puerto > 65535) {
+    if (puerto < 1024 || puerto > 65535)
+    {
         fprintf(stderr, "Error: puerto debe estar entre 1024 y 65535\n");
         return EXIT_FAILURE;
     }
 
     // Crear socket del servidor
     sock_servidor = crear_socket_servidor(puerto);
-    if (sock_servidor < 0) {
+    if (sock_servidor < 0)
+    {
         fprintf(stderr, "Error: no se pudo crear socket del servidor\n");
         return EXIT_FAILURE;
     }
@@ -403,15 +443,17 @@ int main(int argc, char *argv[]) {
     printf("Servidor escuchando en puerto %d...\n", puerto);
 
     // Loop infinito aceptando conexiones
-    while (1) {
+    while (1)
+    {
         printf("\nEsperando conexión de cliente...\n");
 
         longitud_cliente = sizeof(direccion_cliente);
         sock_cliente = accept(sock_servidor,
-                             (struct sockaddr*)&direccion_cliente,
-                             &longitud_cliente);
+                              (struct sockaddr *)&direccion_cliente,
+                              &longitud_cliente);
 
-        if (sock_cliente < 0) {
+        if (sock_cliente < 0)
+        {
             perror("Error aceptando conexión");
             continue;
         }

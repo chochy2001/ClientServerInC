@@ -26,13 +26,15 @@
  *   Crea socket TCP, convierte IP de string a binario,
  *   y se conecta al servidor especificado.
  */
-int conectar_servidor(const char* ip, int puerto) {
+int conectar_servidor(const char *ip, int puerto)
+{
     int sock;
     struct sockaddr_in direccion_servidor;
 
     // Crear socket
     sock = socket(AF_INET, SOCK_STREAM, 0);
-    if (sock < 0) {
+    if (sock < 0)
+    {
         perror("Error creando socket");
         return -1;
     }
@@ -43,7 +45,8 @@ int conectar_servidor(const char* ip, int puerto) {
     direccion_servidor.sin_port = htons((uint16_t)puerto);
 
     // Convertir IP de string a binario
-    if (inet_pton(AF_INET, ip, &direccion_servidor.sin_addr) <= 0) {
+    if (inet_pton(AF_INET, ip, &direccion_servidor.sin_addr) <= 0)
+    {
         fprintf(stderr, "Error: IP inválida '%s'\n", ip);
         close(sock);
         return -1;
@@ -51,8 +54,9 @@ int conectar_servidor(const char* ip, int puerto) {
 
     // Conectar al servidor
     if (connect(sock,
-                (struct sockaddr*)&direccion_servidor,
-                sizeof(direccion_servidor)) < 0) {
+                (struct sockaddr *)&direccion_servidor,
+                sizeof(direccion_servidor)) < 0)
+    {
         perror("Error conectando al servidor");
         close(sock);
         return -1;
@@ -77,32 +81,36 @@ int conectar_servidor(const char* ip, int puerto) {
  *   leyendo comandos del usuario, enviándolos al servidor y mostrando
  *   los resultados.
  */
-int main(int argc, char *argv[]) {
+int main(int argc, char *argv[])
+{
     int puerto;
     int sock;
     char comando[MAX_COMANDO_SIZE];
-    char* resultado = NULL;
+    char *resultado = NULL;
 
     // Validar argumentos
-    if (argc != 3) {
+    if (argc != 3)
+    {
         fprintf(stderr, "Uso: %s <IP> <puerto>\n", argv[0]);
         fprintf(stderr, "Ejemplo: %s localhost 8080\n", argv[0]);
         fprintf(stderr, "Ejemplo: %s 192.168.1.100 8080\n", argv[0]);
         return EXIT_FAILURE;
     }
 
-    const char* ip = argv[1];
+    const char *ip = argv[1];
 
     // Parsear puerto
     puerto = atoi(argv[2]);
-    if (puerto < 1024 || puerto > 65535) {
+    if (puerto < 1024 || puerto > 65535)
+    {
         fprintf(stderr, "Error: puerto debe estar entre 1024 y 65535\n");
         return EXIT_FAILURE;
     }
 
     // Conectar al servidor
     sock = conectar_servidor(ip, puerto);
-    if (sock < 0) {
+    if (sock < 0)
+    {
         fprintf(stderr, "Error: no se pudo conectar al servidor %s:%d\n", ip, puerto);
         return EXIT_FAILURE;
     }
@@ -111,12 +119,14 @@ int main(int argc, char *argv[]) {
     printf("Escribe 'salir' o 'exit' para desconectar\n\n");
 
     // Loop interactivo
-    while (1) {
+    while (1)
+    {
         printf("comando> ");
         fflush(stdout);
 
         // Leer comando del usuario
-        if (fgets(comando, sizeof(comando), stdin) == NULL) {
+        if (fgets(comando, sizeof(comando), stdin) == NULL)
+        {
             // EOF (Ctrl+D) o error
             printf("\n");
             break;
@@ -126,18 +136,21 @@ int main(int argc, char *argv[]) {
         comando[strcspn(comando, "\n")] = '\0';
 
         // Verificar si el comando está vacío
-        if (strlen(comando) == 0) {
+        if (strlen(comando) == 0)
+        {
             continue;
         }
 
         // Verificar comando de salida
-        if (strcmp(comando, COMANDO_SALIR) == 0 || strcmp(comando, COMANDO_EXIT) == 0) {
+        if (strcmp(comando, COMANDO_SALIR) == 0 || strcmp(comando, COMANDO_EXIT) == 0)
+        {
             printf("Cerrando conexión...\n");
             break;
         }
 
         // Enviar comando al servidor
-        if (enviar_con_longitud(sock, comando, strlen(comando)) < 0) {
+        if (enviar_con_longitud(sock, comando, strlen(comando)) < 0)
+        {
             fprintf(stderr, "Error enviando comando al servidor\n");
             break;
         }
@@ -145,26 +158,32 @@ int main(int argc, char *argv[]) {
         // Recibir resultado del servidor
         ssize_t bytes_recibidos = recibir_con_longitud(sock, &resultado);
 
-        if (bytes_recibidos < 0) {
+        if (bytes_recibidos < 0)
+        {
             fprintf(stderr, "Error recibiendo resultado del servidor\n");
             break;
         }
 
-        if (bytes_recibidos == 0) {
+        if (bytes_recibidos == 0)
+        {
             fprintf(stderr, "Servidor cerró la conexión\n");
             break;
         }
 
         // Verificar si es un mensaje de error
-        if (strncmp(resultado, "ERROR:", 6) == 0) {
+        if (strncmp(resultado, "ERROR:", 6) == 0)
+        {
             // Mostrar error en stderr con color rojo (si terminal lo soporta)
             fprintf(stderr, "\033[1;31m%s\033[0m\n", resultado);
-        } else {
+        }
+        else
+        {
             // Mostrar resultado normal en stdout
             printf("%s", resultado);
 
             // Agregar newline si el resultado no termina con uno
-            if (bytes_recibidos > 0 && resultado[bytes_recibidos - 1] != '\n') {
+            if (bytes_recibidos > 0 && resultado[bytes_recibidos - 1] != '\n')
+            {
                 printf("\n");
             }
         }
@@ -178,7 +197,8 @@ int main(int argc, char *argv[]) {
     }
 
     // Cleanup final si quedó algo asignado
-    if (resultado != NULL) {
+    if (resultado != NULL)
+    {
         free(resultado);
     }
 
