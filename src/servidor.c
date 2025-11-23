@@ -71,14 +71,14 @@ int es_comando_prohibido(const char *comando)
  */
 int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje)
 {
-    // Verificar que no esté vacío
+    // 1. Verificar que no esté vacío
     if (comando == NULL || strlen(comando) == 0)
     {
         snprintf(mensaje_error, tam_mensaje, "ERROR: Comando vacío");
         return -1;
     }
 
-    // Verificar que no sea solo whitespace
+    // 2. Verificar que no sea solo whitespace
     int solo_espacios = 1;
     for (size_t i = 0; i < strlen(comando); i++)
     {
@@ -95,7 +95,7 @@ int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje
         return -1;
     }
 
-    // Extraer primer token (nombre del comando)
+    // 3. Extraer primer token
     char comando_copia[MAX_COMANDO_SIZE];
     strncpy(comando_copia, comando, MAX_COMANDO_SIZE - 1);
     comando_copia[MAX_COMANDO_SIZE - 1] = '\0';
@@ -107,7 +107,15 @@ int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje
         return -1;
     }
 
-    // Verificar si está prohibido
+    // Verifica si empieza con "./" O si contiene "../" en cualquier parte
+    if (strncmp(primer_token, "./", 2) == 0 || strstr(primer_token, "../") != NULL)
+    {
+        snprintf(mensaje_error, tam_mensaje,
+                 "ERROR: No se permite ejecución de rutas relativas o scripts locales");
+        return -1;
+    }
+
+    // 4. Verificar si está en la lista de prohibidos
     if (es_comando_prohibido(primer_token))
     {
         snprintf(mensaje_error, tam_mensaje,
@@ -115,7 +123,7 @@ int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje
         return -1;
     }
 
-    return 0; // Comando válido
+    return 0;
 }
 
 /*
