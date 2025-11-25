@@ -14,60 +14,45 @@
 #include <sys/wait.h>
 #include <ctype.h>
 
-// Lista de comandos prohibidos
-static const char *COMANDOS_PROHIBIDOS[] = {
-    "cd",
-    "top",
-    "htop",
-    "vim",
-    "nano",
-    "less",
-    "more",
-    "ssh",
+// Lista de comandos permitidos (Whitelist)
+static const char *COMANDOS_PERMITIDOS[] = {
+    "ls",
+    "cat",
+    "pwd",
+    "whoami",
+    "date",
+    "echo",
+    "ps",
+    "id",
+    "uname",
+    "help",
     NULL // Terminator
 };
 
 /*
- * es_comando_prohibido - Verifica si un comando está en la lista negra
+ * es_comando_permitido - Verifica si un comando está en la lista blanca
  *
  * Parámetros:
- *   comando: string con el comando a verificar (solo el primer token)
+ * comando: string con el comando a verificar (solo el primer token)
  *
  * Retorno:
- *   1 si el comando está prohibido
- *   0 si el comando está permitido
- *
- * Descripción:
- *   Compara el primer token del comando contra la lista de
- *   comandos prohibidos.
+ * 1 si el comando está PERMITIDO
+ * 0 si el comando NO está en la lista (denegado por defecto)
  */
-int es_comando_prohibido(const char *comando)
+int es_comando_permitido(const char *comando)
 {
-    for (int i = 0; COMANDOS_PROHIBIDOS[i] != NULL; i++)
+    for (int i = 0; COMANDOS_PERMITIDOS[i] != NULL; i++)
     {
-        if (strcmp(comando, COMANDOS_PROHIBIDOS[i]) == 0)
+        if (strcmp(comando, COMANDOS_PERMITIDOS[i]) == 0)
         {
-            return 1; // Comando prohibido
+            return 1; // Comando encontrado en la lista blanca
         }
     }
-    return 0; // Comando permitido
+    return 0; // Comando no encontrado -> Bloqueado
 }
 
 /*
- * validar_comando - Valida que el comando sea ejecutable
- *
- * Parámetros:
- *   comando: string con el comando completo
- *   mensaje_error: buffer donde se guardará el mensaje de error (si hay)
- *   tam_mensaje: tamaño del buffer de mensaje_error
- *
- * Retorno:
- *   0 si el comando es válido
- *   -1 si el comando es inválido
- *
- * Descripción:
- *   Verifica que el comando no esté vacío, no sea solo whitespace,
- *   y no esté en la lista de comandos prohibidos.
+ * validar_comando - Valida que el comando sea ejecutable y seguro
  */
 int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje)
 {
@@ -107,7 +92,7 @@ int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje
         return -1;
     }
 
-    // Verifica si empieza con "./" O si contiene "../" en cualquier parte
+    // Seguridad Adicional: Evitar navegación de directorios
     if (strncmp(primer_token, "./", 2) == 0 || strstr(primer_token, "../") != NULL)
     {
         snprintf(mensaje_error, tam_mensaje,
@@ -115,11 +100,13 @@ int validar_comando(const char *comando, char *mensaje_error, size_t tam_mensaje
         return -1;
     }
 
-    // 4. Verificar si está en la lista de prohibidos
-    if (es_comando_prohibido(primer_token))
+    // -----------------------------------------------------------------------
+    // Si NO es permitido, retornamos error.
+    // -----------------------------------------------------------------------
+    if (!es_comando_permitido(primer_token))
     {
         snprintf(mensaje_error, tam_mensaje,
-                 "ERROR: Comando '%s' no está soportado", primer_token);
+                 "SEGURIDAD: El comando '%s' no está autorizado en este servidor.", primer_token);
         return -1;
     }
 
@@ -336,7 +323,7 @@ void manejar_cliente(int sock_cliente)
         // Validar comando
         if (validar_comando(comando, mensaje_error, sizeof(mensaje_error)) < 0)
         {
-            printf("Comando inválido: %s\n", mensaje_error);
+            printf("Comando rechazado: %s\n", mensaje_error);
             enviar_error(sock_cliente, mensaje_error);
             free(comando);
             comando = NULL;
@@ -390,13 +377,9 @@ void manejar_cliente(int sock_cliente)
 
     // Cleanup final si quedó algo asignado
     if (comando != NULL)
-    {
         free(comando);
-    }
     if (salida != NULL)
-    {
         free(salida);
-    }
 
     printf("Sesión con cliente terminada\n");
 }
@@ -471,8 +454,13 @@ int main(int argc, char *argv[])
                inet_ntoa(direccion_cliente.sin_addr),
                ntohs(direccion_cliente.sin_port));
 
-        // Manejar cliente
-        manejar_cliente(sock_cliente);
+        if (fork() == 0)
+        {
+            close(sock_servidor);
+            manejar_cliente(sock_cliente);
+            close(sock_cliente);
+            exit(0);
+        }
 
         // Cerrar conexión con cliente
         close(sock_cliente);
