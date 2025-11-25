@@ -26,9 +26,9 @@
 // ==================== CONSTANTES ====================
 
 // Tamaños de buffer
-#define BUFFER_SIZE 4096                // 4KB - tamaño estándar de página
-#define MAX_COMANDO_SIZE 1024           // Máximo tamaño de comando
-#define MAX_SALIDA_SIZE 65536           // 64KB - máximo tamaño de salida
+#define BUFFER_SIZE 4096      // 4KB - tamaño estándar de página
+#define MAX_COMANDO_SIZE 1024 // Máximo tamaño de comando
+#define MAX_SALIDA_SIZE 65536 // 64KB - máximo tamaño de salida
 
 // Códigos de retorno
 #define EXIT_SUCCESS 0
@@ -61,7 +61,8 @@
  *   Envía primero la longitud de los datos (4 bytes en network byte order)
  *   y luego los datos completos. Maneja envíos parciales con loop.
  */
-static inline int enviar_con_longitud(int sockfd, const char* datos, size_t longitud) {
+static inline int enviar_con_longitud(int sockfd, const char *datos, size_t longitud)
+{
     // Enviar longitud primero (network byte order)
     uint32_t longitud_red = htonl((uint32_t)longitud);
 
@@ -69,12 +70,14 @@ static inline int enviar_con_longitud(int sockfd, const char* datos, size_t long
     ssize_t total_a_enviar = (ssize_t)sizeof(uint32_t);
 
     // Enviar longitud
-    while (bytes_enviados < total_a_enviar) {
+    while (bytes_enviados < total_a_enviar)
+    {
         ssize_t enviados = send(sockfd,
-                               ((char*)&longitud_red) + bytes_enviados,
-                               (size_t)(total_a_enviar - bytes_enviados),
-                               0);
-        if (enviados < 0) {
+                                ((char *)&longitud_red) + bytes_enviados,
+                                (size_t)(total_a_enviar - bytes_enviados),
+                                0);
+        if (enviados < 0)
+        {
             perror("Error enviando longitud");
             return -1;
         }
@@ -83,12 +86,14 @@ static inline int enviar_con_longitud(int sockfd, const char* datos, size_t long
 
     // Enviar datos
     bytes_enviados = 0;
-    while (bytes_enviados < (ssize_t)longitud) {
+    while (bytes_enviados < (ssize_t)longitud)
+    {
         ssize_t enviados = send(sockfd,
-                               datos + bytes_enviados,
-                               longitud - bytes_enviados,
-                               0);
-        if (enviados < 0) {
+                                datos + bytes_enviados,
+                                longitud - bytes_enviados,
+                                0);
+        if (enviados < 0)
+        {
             perror("Error enviando datos");
             return -1;
         }
@@ -117,22 +122,26 @@ static inline int enviar_con_longitud(int sockfd, const char* datos, size_t long
  *
  * IMPORTANTE: El buffer retornado está null-terminated para facilitar uso como string.
  */
-static inline ssize_t recibir_con_longitud(int sockfd, char** buffer_salida) {
+static inline ssize_t recibir_con_longitud(int sockfd, char **buffer_salida)
+{
     // Recibir longitud primero
     uint32_t longitud_red;
     ssize_t bytes_recibidos = 0;
     ssize_t total_a_recibir = (ssize_t)sizeof(uint32_t);
 
-    while (bytes_recibidos < total_a_recibir) {
+    while (bytes_recibidos < total_a_recibir)
+    {
         ssize_t recibidos = recv(sockfd,
-                                ((char*)&longitud_red) + bytes_recibidos,
-                                (size_t)(total_a_recibir - bytes_recibidos),
-                                0);
-        if (recibidos < 0) {
+                                 ((char *)&longitud_red) + bytes_recibidos,
+                                 (size_t)(total_a_recibir - bytes_recibidos),
+                                 0);
+        if (recibidos < 0)
+        {
             perror("Error recibiendo longitud");
             return -1;
         }
-        if (recibidos == 0) {
+        if (recibidos == 0)
+        {
             // Conexión cerrada por el peer
             return 0;
         }
@@ -143,37 +152,43 @@ static inline ssize_t recibir_con_longitud(int sockfd, char** buffer_salida) {
     uint32_t longitud = ntohl(longitud_red);
 
     // Validar longitud
-    if (longitud == 0) {
+    if (longitud == 0)
+    {
         fprintf(stderr, "Error: longitud de mensaje es 0\n");
         return -1;
     }
 
-    if (longitud > MAX_SALIDA_SIZE) {
+    if (longitud > MAX_SALIDA_SIZE)
+    {
         fprintf(stderr, "Error: longitud de mensaje (%u) excede máximo (%d)\n",
                 longitud, MAX_SALIDA_SIZE);
         return -1;
     }
 
     // Asignar memoria (+1 para null terminator)
-    char* buffer = malloc(longitud + 1);
-    if (buffer == NULL) {
+    char *buffer = malloc(longitud + 1);
+    if (buffer == NULL)
+    {
         perror("Error asignando memoria");
         return -1;
     }
 
     // Recibir datos
     bytes_recibidos = 0;
-    while (bytes_recibidos < longitud) {
+    while (bytes_recibidos < longitud)
+    {
         ssize_t recibidos = recv(sockfd,
-                                buffer + bytes_recibidos,
-                                longitud - bytes_recibidos,
-                                0);
-        if (recibidos < 0) {
+                                 buffer + bytes_recibidos,
+                                 longitud - bytes_recibidos,
+                                 0);
+        if (recibidos < 0)
+        {
             perror("Error recibiendo datos");
             free(buffer);
             return -1;
         }
-        if (recibidos == 0) {
+        if (recibidos == 0)
+        {
             // Conexión cerrada antes de recibir todos los datos
             fprintf(stderr, "Error: conexión cerrada prematuramente\n");
             free(buffer);
